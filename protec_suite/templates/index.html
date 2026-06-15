@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROTEC Suite</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;color:#1a2b35;display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+#sidebar{width:220px;background:#1a2b35;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sidebar-logo{padding:20px 16px 16px;border-bottom:1px solid #243545}
+.sidebar-logo .brand{font-size:22px;font-weight:700;color:#1abc9c;letter-spacing:1px}
+.sidebar-logo .sub{font-size:11px;color:#7a9bb0;margin-top:2px}
+nav ul{list-style:none;padding:10px 0}
+nav ul li{cursor:pointer;padding:11px 20px;display:flex;align-items:center;gap:10px;font-size:14px;color:#a8c2d0;transition:all .15s;border-left:3px solid transparent}
+nav ul li:hover{background:#243545;color:#fff}
+nav ul li.active{background:#243545;color:#1abc9c;border-left-color:#1abc9c;font-weight:600}
+nav ul li .ico{font-size:16px;width:20px;text-align:center}
+.sidebar-footer{margin-top:auto;padding:12px 16px;border-top:1px solid #243545;font-size:11px;color:#4a6878}
+
+/* MAIN */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#topbar{background:#fff;border-bottom:1px solid #dde3e8;padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+#topbar .page-title{font-size:18px;font-weight:600;color:#1a2b35}
+#topbar .status-pills{display:flex;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.pill.ok{background:#d4edda;color:#155724}
+.pill.err{background:#f8d7da;color:#721c24}
+.pill.warn{background:#fff3cd;color:#856404}
+#content{flex:1;overflow-y:auto;padding:20px 24px}
+
+/* SECTIONS */
+.section{display:none}
+.section.active{display:block}
+
+/* CARDS */
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:20px;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:600;color:#1a2b35;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-title .ico{font-size:16px}
+
+/* GRID */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+/* STATS */
+.stat-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.stat-card{background:#fff;border-radius:8px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid #1abc9c}
+.stat-card .val{font-size:26px;font-weight:700;color:#1a2b35}
+.stat-card .lbl{font-size:12px;color:#7a9bb0;margin-top:2px}
+.stat-card.orange{border-left-color:#e8a020}
+.stat-card.blue{border-left-color:#3498db}
+.stat-card.red{border-left-color:#e74c3c}
+.stat-card.purple{border-left-color:#9b59b6}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:#1abc9c;color:#fff}
+.btn-primary:hover:not(:disabled){background:#17a589}
+.btn-danger{background:#e74c3c;color:#fff}
+.btn-danger:hover:not(:disabled){background:#c0392b}
+.btn-secondary{background:#6c757d;color:#fff}
+.btn-secondary:hover:not(:disabled){background:#5a6268}
+.btn-orange{background:#e8a020;color:#fff}
+.btn-orange:hover:not(:disabled){background:#c98b18}
+.btn-outline{background:#fff;color:#1a2b35;border:1px solid #dde3e8}
+.btn-outline:hover:not(:disabled){background:#f8f9fa}
+.btn-sm{padding:5px 10px;font-size:12px}
+
+/* FORM */
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:13px;font-weight:600;color:#4a5568;margin-bottom:5px}
+.form-control{width:100%;padding:8px 10px;border:1px solid #dde3e8;border-radius:6px;font-size:13px;transition:border .15s}
+.form-control:focus{outline:none;border-color:#1abc9c}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+/* CONSOLE */
+.console{background:#0f1923;color:#a8c2d0;font-family:'Consolas','Courier New',monospace;font-size:12px;padding:12px;border-radius:6px;height:180px;overflow-y:auto;line-height:1.5}
+.console .log-info{color:#a8c2d0}
+.console .log-ok{color:#2ecc71}
+.console .log-err{color:#e74c3c}
+.console .log-warn{color:#f39c12}
+
+/* PROGRESS */
+.progress-wrap{height:8px;background:#e9ecef;border-radius:4px;overflow:hidden;margin:10px 0}
+.progress-bar{height:100%;background:#1abc9c;border-radius:4px;transition:width .3s;width:0}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;margin-top:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f8f9fa;font-weight:600;color:#4a5568;padding:8px 10px;text-align:left;border-bottom:2px solid #dee2e6;white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid #f0f2f5;color:#374151}
+tr:hover td{background:#f8f9fa}
+
+/* TABS */
+.tabs{display:flex;border-bottom:2px solid #dee2e6;margin-bottom:16px}
+.tab{padding:8px 18px;cursor:pointer;font-size:14px;font-weight:500;color:#6c757d;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tab:hover{color:#1a2b35}
+.tab.active{color:#1abc9c;border-bottom-color:#1abc9c;font-weight:600}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* PLC CARDS */
+.variateur-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:900px){.variateur-grid{grid-template-columns:repeat(2,1fr)}}
+.var-card{background:#1a2b35;border-radius:8px;padding:14px;border-left:4px solid #1abc9c;position:relative}
+.var-card .var-name{font-size:11px;font-weight:600;color:#7a9bb0;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.var-card .var-hz{font-size:28px;font-weight:700;color:#fff}
+.var-card .var-hz span{font-size:13px;font-weight:400;color:#7a9bb0}
+.var-card .var-a{font-size:14px;color:#f39c12;margin-top:2px}
+.var-card .var-led{position:absolute;top:12px;right:12px;width:10px;height:10px;border-radius:50%;background:#555}
+.var-card .var-led.on{background:#2ecc71;box-shadow:0 0 6px #2ecc71}
+.var-card .var-analog{font-size:11px;color:#7a9bb0;margin-top:6px;border-top:1px solid #243545;padding-top:6px}
+
+.niveau-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.niv-card{background:#1a2b35;border-radius:8px;padding:14px}
+.niv-card .niv-label{font-size:11px;font-weight:600;color:#7a9bb0;text-transform:uppercase;margin-bottom:8px}
+.niv-card .niv-val{font-size:22px;font-weight:700;color:#fff;margin-bottom:8px}
+.niv-bar-bg{height:8px;background:#243545;border-radius:4px;overflow:hidden}
+.niv-bar-fill{height:100%;border-radius:4px;transition:width .5s}
+
+.plc-topbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#1a2b35;padding:12px 16px;border-radius:8px;margin-bottom:14px}
+.plc-status{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#a8c2d0}
+.plc-dot{width:10px;height:10px;border-radius:50%;background:#e74c3c;flex-shrink:0}
+.plc-dot.on{background:#2ecc71;box-shadow:0 0 6px #2ecc71}
+.plc-ip{font-size:12px;color:#4a6878;background:#243545;padding:3px 8px;border-radius:4px}
+.plc-reads{font-size:12px;color:#7a9bb0;margin-left:auto}
+
+/* CONFIG TABS */
+.config-section{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+/* ALERTS */
+.alert{padding:10px 14px;border-radius:6px;font-size:13px;margin-bottom:12px}
+.alert-info{background:#d1ecf1;color:#0c5460;border:1px solid #bee5eb}
+.alert-success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.alert-danger{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
+.alert-warning{background:#fff3cd;color:#856404;border:1px solid #ffeeba}
+
+/* BADGE */
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:600}
+.badge-green{background:#d4edda;color:#155724}
+.badge-orange{background:#fff3cd;color:#856404}
+.badge-red{background:#f8d7da;color:#721c24}
+.badge-blue{background:#cce5ff;color:#004085}
+
+/* CYCLEVIA */
+.month-selector{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px}
+.download-result{background:#f8f9fa;border:2px dashed #dee2e6;border-radius:8px;padding:24px;text-align:center;margin-top:12px}
+.download-result.ready{border-color:#1abc9c;background:#f0faf7}
+
+/* SUMMARY TABLE */
+.summary-table td:last-child{font-weight:700;color:#1abc9c}
+
+/* Pagination */
+.pagination{display:flex;gap:6px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.pagination button{padding:4px 10px;border:1px solid #dee2e6;background:#fff;border-radius:4px;cursor:pointer;font-size:13px}
+.pagination button.active{background:#1abc9c;color:#fff;border-color:#1abc9c}
+.pagination button:disabled{opacity:.5;cursor:not-allowed}
+.pagination .page-info{font-size:13px;color:#6c757d;margin:0 4px}
+
+/* Toggle switch */
+.switch{position:relative;display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.switch input{opacity:0;width:0;height:0}
+.slider{width:38px;height:20px;background:#ccc;border-radius:10px;position:relative;transition:.3s}
+.slider:before{content:"";position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s}
+.switch input:checked+.slider{background:#1abc9c}
+.switch input:checked+.slider:before{transform:translateX(18px)}
+
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">PROTEC</div>
+    <div class="sub">Suite de gestion</div>
+  </div>
+  <nav>
+    <ul>
+      <li class="active" data-sec="dashboard"><span class="ico">⬛</span>Dashboard</li>
+      <li data-sec="bilan"><span class="ico">📍</span>Bilan KM</li>
+      <li data-sec="plc"><span class="ico">⚙️</span>Moniteur PLC</li>
+      <li data-sec="cyclevia"><span class="ico">🛢️</span>CyclEvia</li>
+      <li data-sec="config"><span class="ico">⚙</span>Configuration</li>
+    </ul>
+  </nav>
+  <div class="sidebar-footer">PROTEC Suite v2.0</div>
+</div>
+
+<div id="main">
+  <div id="topbar">
+    <div class="page-title" id="topbar-title">Dashboard</div>
+    <div class="status-pills">
+      <span class="pill warn" id="pill-plc">PLC: --</span>
+      <span class="pill warn" id="pill-bilan">Bilan prêt</span>
+    </div>
+  </div>
+  <div id="content">
+
+    <!-- ============================================================ DASHBOARD -->
+    <div id="sec-dashboard" class="section active">
+      <div class="stat-cards" id="dash-stats">
+        <div class="stat-card"><div class="val" id="ds-plc-status">--</div><div class="lbl">Moniteur PLC</div></div>
+        <div class="stat-card orange"><div class="val" id="ds-plc-reads">0</div><div class="lbl">Lectures PLC</div></div>
+        <div class="stat-card blue"><div class="val" id="ds-bilan-ready">Prêt</div><div class="lbl">Bilan KM</div></div>
+        <div class="stat-card purple"><div class="val" id="ds-cyclevia-ready">Prêt</div><div class="lbl">CyclEvia</div></div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="ico">⚙️</span>Moniteur PLC</div>
+          <div id="dash-plc-content">
+            <div id="dash-plc-vars" class="variateur-grid" style="display:none"></div>
+            <p id="dash-plc-placeholder" style="color:#7a9bb0;font-size:13px">PLC non connecté. Allez dans <b>Moniteur PLC</b> pour vous connecter.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="ico">📋</span>Accès rapide</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <button class="btn btn-primary" onclick="goTo('bilan')">📍 Lancer le Bilan KM</button>
+            <button class="btn btn-orange" onclick="goTo('cyclevia')">🛢️ Générer CSV CyclEvia</button>
+            <button class="btn btn-secondary" onclick="goTo('plc')">⚙️ Moniteur PLC</button>
+            <button class="btn btn-outline" onclick="goTo('config')">⚙ Configuration</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ BILAN KM -->
+    <div id="sec-bilan" class="section">
+      <div class="tabs">
+        <div class="tab active" data-tab="bilan-calc">Calcul</div>
+        <div class="tab" data-tab="bilan-config">Configuration</div>
+        <div class="tab" data-tab="bilan-cats">Catégories CED</div>
+      </div>
+
+      <!-- CALCUL -->
+      <div id="bilan-calc" class="tab-content active">
+        <div class="card">
+          <div class="form-row" style="align-items:flex-end;margin-bottom:12px">
+            <div class="form-group" style="margin:0">
+              <label>Années (ex: 2024 ou 2023-2025)</label>
+              <input type="text" id="b-years" class="form-control" placeholder="2025" value="2025">
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-primary" id="btn-bilan-run" onclick="bilanRun()">▶ Lancer</button>
+              <button class="btn btn-outline" id="btn-bilan-export" onclick="bilanExport()" disabled>⬇ Excel</button>
+            </div>
+          </div>
+          <div class="progress-wrap"><div class="progress-bar" id="b-progress"></div></div>
+          <div class="console" id="b-console"></div>
+        </div>
+
+        <div id="bilan-results-section" class="hidden">
+          <div class="stat-cards" id="b-stats"></div>
+          <div class="card">
+            <div class="card-title">Synthèse par catégorie</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Année</th><th>Type</th><th>Catégorie</th><th>Code traitement</th><th>Km comptés</th></tr></thead>
+                <tbody id="b-summary-body"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Détail des trajets</div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>BSD</th><th>Année</th><th>Type</th><th>Catégorie</th><th>CED</th>
+                  <th>Origine</th><th>Destination</th><th>Km comptés</th><th>Source</th></tr>
+                </thead>
+                <tbody id="b-detail-body"></tbody>
+              </table>
+            </div>
+            <div class="pagination" id="b-pagination"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONFIG -->
+      <div id="bilan-config" class="tab-content">
+        <div class="card">
+          <div class="form-group"><label>Token API Trackdéchets</label>
+            <input type="password" id="bc-token" class="form-control" placeholder="Bearer token"></div>
+          <div class="form-row">
+            <div class="form-group"><label>SIRET PROTEC</label>
+              <input type="text" id="bc-siret" class="form-control" placeholder="12345678901234"></div>
+            <div class="form-group"><label>Adresse PROTEC (géocodage)</label>
+              <input type="text" id="bc-adresse" class="form-control" placeholder="123 rue exemple 75000 Paris"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Clé API ORS (optionnel)</label>
+              <input type="password" id="bc-ors" class="form-control" placeholder="Clé OpenRouteService"></div>
+            <div class="form-group"><label>Mode de comptage</label>
+              <label class="switch" style="margin-top:8px">
+                <input type="checkbox" id="bc-roundtrip" checked>
+                <span class="slider"></span>
+                <span style="font-size:13px">Aller-retour</span>
+              </label>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveBilanConfig()">💾 Enregistrer</button>
+          <span id="bc-saved" class="hidden" style="color:#1abc9c;margin-left:10px;font-size:13px">✔ Enregistré</span>
+        </div>
+      </div>
+
+      <!-- CATEGORIES -->
+      <div id="bilan-cats" class="tab-content">
+        <div class="card">
+          <p style="font-size:13px;color:#6c757d;margin-bottom:14px">
+            Chaque catégorie est associée à des préfixes de codes CED. Modifiez le JSON directement.
+          </p>
+          <div class="form-group"><label>Catégories (JSON)</label>
+            <textarea id="bc-cats" class="form-control" rows="18" style="font-family:monospace;font-size:12px"></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="saveBilanConfig()">💾 Enregistrer</button>
+          <span id="bc-cats-saved" class="hidden" style="color:#1abc9c;margin-left:10px;font-size:13px">✔ Enregistré</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ PLC MONITOR -->
+    <div id="sec-plc" class="section">
+      <div class="plc-topbar">
+        <div class="plc-dot" id="plc-dot"></div>
+        <div class="plc-status" id="plc-status-label">DÉCONNECTÉ</div>
+        <span class="plc-ip" id="plc-ip-label">10.10.0.10</span>
+        <div style="display:flex;gap:6px;margin-left:12px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" id="btn-plc-connect" onclick="plcConnect()">Connecter</button>
+          <button class="btn btn-danger btn-sm hidden" id="btn-plc-disconnect" onclick="plcDisconnect()">Déconnecter</button>
+          <button class="btn btn-secondary btn-sm hidden" id="btn-plc-start" onclick="plcStartMonitoring()">▶ Monitoring</button>
+          <button class="btn btn-danger btn-sm hidden" id="btn-plc-stop" onclick="plcStopMonitoring()">■ Stop</button>
+          <button class="btn btn-outline btn-sm hidden" id="btn-plc-read1" onclick="plcRead1()">Lire 1×</button>
+        </div>
+        <div class="plc-reads" id="plc-reads-label">0 lectures</div>
+      </div>
+
+      <div id="plc-main" class="">
+        <div class="variateur-grid" id="plc-var-grid"></div>
+
+        <div class="grid2">
+          <div class="card" style="background:#1a2b35">
+            <div class="card-title" style="color:#1abc9c">Niveaux</div>
+            <div class="niveau-grid" id="plc-niv-grid" style="grid-template-columns:1fr 1fr 1fr;gap:10px"></div>
+          </div>
+          <div class="card" style="background:#1a2b35">
+            <div class="card-title" style="color:#1abc9c">Détail variateurs</div>
+            <div style="overflow-x:auto">
+              <table style="font-size:12px;color:#a8c2d0">
+                <thead><tr>
+                  <th style="background:#243545;color:#7a9bb0;padding:5px 8px">Equipement</th>
+                  <th style="background:#243545;color:#7a9bb0;padding:5px 8px">Hz</th>
+                  <th style="background:#243545;color:#7a9bb0;padding:5px 8px">A</th>
+                  <th style="background:#243545;color:#7a9bb0;padding:5px 8px">I.nom</th>
+                  <th style="background:#243545;color:#7a9bb0;padding:5px 8px">Csg.H</th>
+                  <th style="background:#243545;color:#7a9bb0;padding:5px 8px">Csg.B</th>
+                  <th style="background:#243545;color:#7a9bb0;padding:5px 8px">Valeur analog.</th>
+                </tr></thead>
+                <tbody id="plc-detail-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="background:#1a2b35;margin-top:0">
+          <div class="card-title" style="color:#1abc9c">Historique temps réel</div>
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <button class="btn btn-sm" style="background:#243545;color:#1abc9c" onclick="plcShowChart('hz')">Fréquences Hz</button>
+            <button class="btn btn-sm" style="background:#243545;color:#f39c12" onclick="plcShowChart('a')">Courants A</button>
+          </div>
+          <canvas id="plc-chart" height="120"></canvas>
+        </div>
+      </div>
+
+      <div id="plc-no-snap7" class="hidden">
+        <div class="alert alert-warning">
+          <b>python-snap7 non installé</b> — Le module python-snap7 est requis pour se connecter au PLC.<br>
+          Installez-le : <code>pip install python-snap7</code> puis redémarrez l'application.
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ CYCLEVIA -->
+    <div id="sec-cyclevia" class="section">
+      <div class="card">
+        <div class="card-title"><span class="ico">🛢️</span>Génération CSV CyclEvia — Huiles collectées</div>
+        <div class="month-selector">
+          <div class="form-group" style="margin:0;min-width:120px">
+            <label>Mois</label>
+            <select id="cv-mois" class="form-control">
+              <option value="1">Janvier</option><option value="2">Février</option>
+              <option value="3">Mars</option><option value="4">Avril</option>
+              <option value="5">Mai</option><option value="6">Juin</option>
+              <option value="7">Juillet</option><option value="8">Août</option>
+              <option value="9">Septembre</option><option value="10">Octobre</option>
+              <option value="11">Novembre</option><option value="12">Décembre</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0;min-width:100px">
+            <label>Année</label>
+            <input type="number" id="cv-annee" class="form-control" min="2020" max="2030" value="2025">
+          </div>
+          <button class="btn btn-primary" id="btn-cv-run" onclick="cvRun()">▶ Générer CSV</button>
+        </div>
+        <div class="progress-wrap"><div class="progress-bar" id="cv-progress"></div></div>
+        <div class="console" id="cv-console"></div>
+        <div id="cv-result" class="download-result hidden">
+          <div id="cv-result-text" style="font-size:14px;margin-bottom:12px"></div>
+          <button class="btn btn-primary" id="btn-cv-download" onclick="cvDownload()">⬇ Télécharger CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ CONFIG -->
+    <div id="sec-config" class="section">
+      <div class="tabs">
+        <div class="tab active" data-tab="cfg-bilan-tab">Bilan KM</div>
+        <div class="tab" data-tab="cfg-cyclevia-tab">CyclEvia</div>
+        <div class="tab" data-tab="cfg-plc-tab">PLC Monitor</div>
+      </div>
+
+      <!-- Config Bilan (même contenu que l'onglet bilan-config) -->
+      <div id="cfg-bilan-tab" class="tab-content active config-section">
+        <div class="form-group"><label>Token API Trackdéchets</label>
+          <input type="password" id="cfg-bc-token" class="form-control" placeholder="Bearer token"></div>
+        <div class="form-row">
+          <div class="form-group"><label>SIRET PROTEC</label>
+            <input type="text" id="cfg-bc-siret" class="form-control"></div>
+          <div class="form-group"><label>Adresse PROTEC</label>
+            <input type="text" id="cfg-bc-adresse" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Clé API ORS (optionnel)</label>
+            <input type="password" id="cfg-bc-ors" class="form-control"></div>
+          <div class="form-group"><label>Comptage distances</label>
+            <label class="switch" style="margin-top:8px">
+              <input type="checkbox" id="cfg-bc-rt" checked>
+              <span class="slider"></span>
+              <span style="font-size:13px">Aller-retour</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group"><label>Catégories CED (JSON)</label>
+          <textarea id="cfg-bc-cats" class="form-control" rows="12" style="font-family:monospace;font-size:12px"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveBilanConfigFull()">💾 Enregistrer</button>
+        <span id="cfg-bc-saved" class="hidden" style="color:#1abc9c;margin-left:10px;font-size:13px">✔ Enregistré</span>
+      </div>
+
+      <!-- Config CyclEvia -->
+      <div id="cfg-cyclevia-tab" class="tab-content config-section">
+        <div class="form-row">
+          <div class="form-group"><label>Token API Trackdéchets</label>
+            <input type="password" id="cfg-cv-key" class="form-control"></div>
+          <div class="form-group"><label>SIRET PROTEC</label>
+            <input type="text" id="cfg-cv-siret" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Code dépôt CyclEvia</label>
+            <input type="text" id="cfg-cv-depot" class="form-control" placeholder="Code fourni par CyclEvia"></div>
+          <div class="form-group"><label>SIRET Osilub (sorties stock)</label>
+            <input type="text" id="cfg-cv-osilub" class="form-control"></div>
+        </div>
+        <div class="form-group"><label>Immatriculations actives (séparées par virgule)</label>
+          <input type="text" id="cfg-cv-immats" class="form-control" placeholder="BN-860-KN, EW-270-SZ"></div>
+        <div class="form-group"><label>Codes huile à filtrer (séparés par virgule)</label>
+          <input type="text" id="cfg-cv-codes" class="form-control" placeholder="13 02 04*, 13 02 05*"></div>
+        <div class="form-group"><label>Catégorie détenteur par défaut</label>
+          <input type="text" id="cfg-cv-catdef" class="form-control" placeholder="AUT"></div>
+        <div class="form-row">
+          <div class="form-group"><label>Mapping catégories (SIRET → code, JSON)</label>
+            <textarea id="cfg-cv-mcat" class="form-control" rows="5" style="font-family:monospace;font-size:12px"></textarea>
+          </div>
+          <div class="form-group"><label>Mapping type huile (code CED → type, JSON)</label>
+            <textarea id="cfg-cv-mhuile" class="form-control" rows="5" style="font-family:monospace;font-size:12px"></textarea>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="saveCvConfig()">💾 Enregistrer</button>
+        <span id="cfg-cv-saved" class="hidden" style="color:#1abc9c;margin-left:10px;font-size:13px">✔ Enregistré</span>
+      </div>
+
+      <!-- Config PLC -->
+      <div id="cfg-plc-tab" class="tab-content config-section">
+        <div class="form-row3">
+          <div class="form-group"><label>Adresse IP du PLC</label>
+            <input type="text" id="cfg-plc-ip" class="form-control" placeholder="10.10.0.10"></div>
+          <div class="form-group"><label>Rack</label>
+            <input type="number" id="cfg-plc-rack" class="form-control" value="0" min="0"></div>
+          <div class="form-group"><label>Slot</label>
+            <input type="number" id="cfg-plc-slot" class="form-control" value="1" min="0"></div>
+        </div>
+        <div class="form-row3">
+          <div class="form-group"><label>Numéro DB</label>
+            <input type="number" id="cfg-plc-db" class="form-control" value="24"></div>
+          <div class="form-group"><label>Taille DB (octets)</label>
+            <input type="number" id="cfg-plc-dbsize" class="form-control" value="1404"></div>
+          <div class="form-group"><label>Intervalle lecture (s)</label>
+            <input type="number" id="cfg-plc-interval" class="form-control" value="5" min="1"></div>
+        </div>
+        <button class="btn btn-primary" onclick="savePlcConfig()">💾 Enregistrer</button>
+        <span id="cfg-plc-saved" class="hidden" style="color:#1abc9c;margin-left:10px;font-size:13px">✔ Enregistré</span>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// =====================================================================
+// NAVIGATION
+// =====================================================================
+const SECTION_TITLES = {
+  dashboard: 'Dashboard', bilan: 'Bilan Kilométrique',
+  plc: 'Moniteur PLC — Volute DUO', cyclevia: 'CyclEvia — Collecte Huile',
+  config: 'Configuration'
+};
+document.querySelectorAll('#sidebar nav li').forEach(li => {
+  li.addEventListener('click', () => goTo(li.dataset.sec));
+});
+function goTo(sec) {
+  document.querySelectorAll('#sidebar nav li').forEach(l => l.classList.remove('active'));
+  document.querySelector(`[data-sec="${sec}"]`)?.classList.add('active');
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + sec)?.classList.add('active');
+  document.getElementById('topbar-title').textContent = SECTION_TITLES[sec] || sec;
+  if (sec === 'config') loadConfigForms();
+  if (sec === 'bilan') loadBilanConfig();
+}
+
+// Tabs inside sections
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    const parent = t.closest('.tabs').parentElement;
+    parent.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    parent.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
+    parent.querySelector('#' + t.dataset.tab)?.classList.add('active');
+  });
+});
+
+// =====================================================================
+// CONSOLE helpers
+// =====================================================================
+function clog(id, msg, cls) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const d = document.createElement('div');
+  d.className = cls || 'log-info';
+  d.textContent = msg;
+  el.appendChild(d);
+  el.scrollTop = el.scrollHeight;
+}
+function cclear(id) { document.getElementById(id).innerHTML = ''; }
+
+// =====================================================================
+// CONFIG LOAD
+// =====================================================================
+let _cfg = {};
+async function loadAllConfig() {
+  try {
+    const r = await fetch('/api/config');
+    _cfg = await r.json();
+    updatePillsFromStatus();
+  } catch(e) { console.error(e); }
+}
+function loadBilanConfig() {
+  const c = _cfg.bilan || {};
+  setV('bc-token', c.td_api_token||'');
+  setV('bc-siret', c.protec_siret||'');
+  setV('bc-adresse', c.protec_adresse||'');
+  setV('bc-ors', c.ors_api_key||'');
+  setC('bc-roundtrip', c.round_trip !== false);
+  setV('bc-cats', JSON.stringify(c.categories||{}, null, 2));
+}
+function loadConfigForms() {
+  const b = _cfg.bilan || {};
+  setV('cfg-bc-token', b.td_api_token||'');
+  setV('cfg-bc-siret', b.protec_siret||'');
+  setV('cfg-bc-adresse', b.protec_adresse||'');
+  setV('cfg-bc-ors', b.ors_api_key||'');
+  setC('cfg-bc-rt', b.round_trip !== false);
+  setV('cfg-bc-cats', JSON.stringify(b.categories||{}, null, 2));
+
+  const cv = _cfg.cyclevia || {};
+  setV('cfg-cv-key', cv.api_key||'');
+  setV('cfg-cv-siret', cv.siret_protec||'');
+  setV('cfg-cv-depot', cv.code_depot||'');
+  setV('cfg-cv-osilub', cv.siret_osilub||'');
+  setV('cfg-cv-immats', (cv.immatriculations_actives||[]).join(', '));
+  setV('cfg-cv-codes', (cv.codes_huile||[]).join(', '));
+  setV('cfg-cv-catdef', cv.categorie_defaut||'AUT');
+  setV('cfg-cv-mcat', JSON.stringify(cv.mapping_categories||{}, null, 2));
+  setV('cfg-cv-mhuile', JSON.stringify(cv.mapping_type_huile||{}, null, 2));
+
+  const p = _cfg.plc || {};
+  setV('cfg-plc-ip', p.ip||'10.10.0.10');
+  setV('cfg-plc-rack', p.rack||0);
+  setV('cfg-plc-slot', p.slot||1);
+  setV('cfg-plc-db', p.db_num||24);
+  setV('cfg-plc-dbsize', p.db_size||1404);
+  setV('cfg-plc-interval', p.interval||5);
+}
+function setV(id, v) { const e = document.getElementById(id); if(e) e.value = v; }
+function getV(id) { return document.getElementById(id)?.value || ''; }
+function setC(id, v) { const e = document.getElementById(id); if(e) e.checked = v; }
+function getC(id) { return document.getElementById(id)?.checked || false; }
+
+async function saveBilanConfig() {
+  let cats;
+  try { cats = JSON.parse(getV('bc-cats')); } catch(e) { alert('JSON catégories invalide'); return; }
+  const cfg = {
+    td_api_token: getV('bc-token'), ors_api_key: getV('bc-ors'),
+    protec_siret: getV('bc-siret'), protec_adresse: getV('bc-adresse'),
+    round_trip: getC('bc-roundtrip'), categories: cats
+  };
+  await fetch('/api/config/bilan', {method:'POST', body:JSON.stringify(cfg), headers:{'Content-Type':'application/json'}});
+  _cfg.bilan = cfg;
+  showSaved('bc-saved');
+}
+async function saveBilanConfigFull() {
+  let cats;
+  try { cats = JSON.parse(getV('cfg-bc-cats')); } catch(e) { alert('JSON catégories invalide'); return; }
+  const cfg = {
+    td_api_token: getV('cfg-bc-token'), ors_api_key: getV('cfg-bc-ors'),
+    protec_siret: getV('cfg-bc-siret'), protec_adresse: getV('cfg-bc-adresse'),
+    round_trip: getC('cfg-bc-rt'), categories: cats
+  };
+  await fetch('/api/config/bilan', {method:'POST', body:JSON.stringify(cfg), headers:{'Content-Type':'application/json'}});
+  _cfg.bilan = cfg;
+  showSaved('cfg-bc-saved');
+}
+async function saveCvConfig() {
+  let mcat, mhuile;
+  try { mcat = JSON.parse(getV('cfg-cv-mcat') || '{}'); } catch(e) { alert('JSON mapping_categories invalide'); return; }
+  try { mhuile = JSON.parse(getV('cfg-cv-mhuile') || '{}'); } catch(e) { alert('JSON mapping_type_huile invalide'); return; }
+  const cfg = {
+    api_key: getV('cfg-cv-key'), siret_protec: getV('cfg-cv-siret'),
+    code_depot: getV('cfg-cv-depot'), siret_osilub: getV('cfg-cv-osilub'),
+    immatriculations_actives: getV('cfg-cv-immats').split(',').map(s=>s.trim()).filter(Boolean),
+    codes_huile: getV('cfg-cv-codes').split(',').map(s=>s.trim()).filter(Boolean),
+    categorie_defaut: getV('cfg-cv-catdef') || 'AUT',
+    mapping_categories: mcat, mapping_type_huile: mhuile
+  };
+  await fetch('/api/config/cyclevia', {method:'POST', body:JSON.stringify(cfg), headers:{'Content-Type':'application/json'}});
+  _cfg.cyclevia = cfg;
+  showSaved('cfg-cv-saved');
+}
+async function savePlcConfig() {
+  const cfg = {
+    ip: getV('cfg-plc-ip'), rack: parseInt(getV('cfg-plc-rack')),
+    slot: parseInt(getV('cfg-plc-slot')), db_num: parseInt(getV('cfg-plc-db')),
+    db_size: parseInt(getV('cfg-plc-dbsize')), interval: parseInt(getV('cfg-plc-interval'))
+  };
+  await fetch('/api/config/plc', {method:'POST', body:JSON.stringify(cfg), headers:{'Content-Type':'application/json'}});
+  _cfg.plc = cfg;
+  showSaved('cfg-plc-saved');
+}
+function showSaved(id) {
+  const el = document.getElementById(id);
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 2500);
+}
+
+// =====================================================================
+// BILAN KM
+// =====================================================================
+let _bilanJobId = null;
+let _bilanPage = 1;
+
+async function bilanRun() {
+  const years = getV('b-years');
+  if (!years) return;
+  cclear('b-console');
+  document.getElementById('b-progress').style.width = '0';
+  document.getElementById('bilan-results-section').classList.add('hidden');
+  document.getElementById('btn-bilan-export').disabled = true;
+  document.getElementById('btn-bilan-run').disabled = true;
+
+  clog('b-console', `Lancement calcul — années : ${years}`, 'log-info');
+
+  const r = await fetch('/api/bilan/run', {
+    method: 'POST',
+    body: JSON.stringify({years}),
+    headers: {'Content-Type':'application/json'}
+  });
+  const {job_id} = await r.json();
+  _bilanJobId = job_id;
+
+  const es = new EventSource(`/api/bilan/progress/${job_id}`);
+  let sumData = null;
+  es.addEventListener('log', e => {
+    const msg = JSON.parse(e.data);
+    clog('b-console', msg, 'log-info');
+  });
+  es.addEventListener('progress', e => {
+    const {done, total} = JSON.parse(e.data);
+    const pct = total > 0 ? Math.round(done/total*100) : 0;
+    document.getElementById('b-progress').style.width = pct + '%';
+    clog('b-console', `   Progression : ${done}/${total} (${pct}%)`, 'log-info');
+  });
+  es.addEventListener('summary', e => {
+    sumData = JSON.parse(e.data);
+  });
+  es.addEventListener('done', e => {
+    es.close();
+    document.getElementById('b-progress').style.width = '100%';
+    document.getElementById('btn-bilan-run').disabled = false;
+    document.getElementById('btn-bilan-export').disabled = false;
+    clog('b-console', '✔ Calcul terminé', 'log-ok');
+    if (sumData) renderBilanSummary(sumData);
+    _bilanPage = 1;
+    loadBilanDetail(1);
+    document.getElementById('bilan-results-section').classList.remove('hidden');
+  });
+  es.addEventListener('error', e => {
+    const msg = typeof e.data !== 'undefined' ? JSON.parse(e.data) : 'Erreur inconnue';
+    es.close();
+    document.getElementById('btn-bilan-run').disabled = false;
+    clog('b-console', '✗ Erreur : ' + msg, 'log-err');
+  });
+}
+
+function renderBilanSummary(sumData) {
+  const tbody = document.getElementById('b-summary-body');
+  tbody.innerHTML = '';
+  let totalKm = 0;
+  const entries = Object.entries(sumData).sort();
+  entries.forEach(([k, km]) => {
+    const [yr, tp, cat, code] = k.split('|');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${yr}</td><td>${tp}</td><td>${cat}</td><td>${code||'-'}</td><td><b>${km.toFixed(1)}</b></td>`;
+    tbody.appendChild(tr);
+    totalKm += km;
+  });
+  const stats = document.getElementById('b-stats');
+  stats.innerHTML = `
+    <div class="stat-card"><div class="val">${entries.length}</div><div class="lbl">Lignes synthèse</div></div>
+    <div class="stat-card orange"><div class="val">${Math.round(totalKm).toLocaleString('fr-FR')}</div><div class="lbl">km total</div></div>
+  `;
+}
+
+async function loadBilanDetail(page) {
+  if (!_bilanJobId) return;
+  const r = await fetch(`/api/bilan/results/${_bilanJobId}?page=${page}&per_page=50`);
+  const data = await r.json();
+  const tbody = document.getElementById('b-detail-body');
+  tbody.innerHTML = '';
+  data.rows.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${row.BSD}</td><td>${row.Annee}</td><td>${row.Type}</td>
+      <td>${row.Categorie}</td><td>${row.CED}</td>
+      <td title="${row['Adresse origine']}">${row.Origine}</td>
+      <td title="${row['Adresse destination']}">${row.Destination}</td>
+      <td><b>${row['Km comptes']??'--'}</b></td>
+      <td><small>${row.Source}</small></td>`;
+    tbody.appendChild(tr);
+  });
+  renderPagination('b-pagination', data.page, data.pages, loadBilanDetail);
+  _bilanPage = page;
+}
+
+function bilanExport() {
+  if (_bilanJobId) window.location.href = `/api/bilan/export/${_bilanJobId}`;
+}
+
+function renderPagination(id, page, pages, cb) {
+  const el = document.getElementById(id);
+  el.innerHTML = '';
+  const info = document.createElement('span');
+  info.className = 'page-info';
+  info.textContent = `Page ${page} / ${pages}`;
+  const prev = document.createElement('button');
+  prev.textContent = '← Préc.'; prev.disabled = page <= 1;
+  prev.onclick = () => cb(page-1);
+  const next = document.createElement('button');
+  next.textContent = 'Suiv. →'; next.disabled = page >= pages;
+  next.onclick = () => cb(page+1);
+  el.appendChild(prev); el.appendChild(info); el.appendChild(next);
+}
+
+// =====================================================================
+// PLC MONITOR
+// =====================================================================
+let _plcES = null;
+let _plcChartMode = 'hz';
+let _plcChart = null;
+let _plcHistory = [];
+const MAX_CHART_PTS = 60;
+
+const VARIATEURS = [
+  {short:'VIS', nom:'Vis', color:'#2ECC71'},
+  {short:'AGIT', nom:'Agitateur', color:'#3498DB'},
+  {short:'P.BOUE', nom:'Pompe boues', color:'#F39C12'},
+  {short:'P.FILT', nom:'Pompe filtrat', color:'#1ABC9C'},
+  {short:'ARBRE', nom:'Arbre trans.', color:'#9B59B6'},
+  {short:'MIXER', nom:'Agit. fosse', color:'#E67E22'},
+];
+
+function initPLCWidgets() {
+  const grid = document.getElementById('plc-var-grid');
+  grid.innerHTML = '';
+  VARIATEURS.forEach(v => {
+    const div = document.createElement('div');
+    div.className = 'var-card';
+    div.id = 'var-' + v.short.replace('.','_');
+    div.style.borderLeftColor = v.color;
+    div.innerHTML = `
+      <div class="var-led" id="led-${v.short.replace('.','_')}"></div>
+      <div class="var-name">${v.short} — ${v.nom}</div>
+      <div class="var-hz" style="color:${v.color}"><span id="hz-${v.short.replace('.','_')}">--</span><span> Hz</span></div>
+      <div class="var-a"><span id="a-${v.short.replace('.','_')}">--</span> A</div>
+      <div class="var-analog" id="analog-${v.short.replace('.','_')}">--</div>`;
+    grid.appendChild(div);
+  });
+  const niv = document.getElementById('plc-niv-grid');
+  niv.innerHTML = '';
+  [{key:'niv_flocul',lbl:'Niv. Floculation',color:'#3498DB'},
+   {key:'niv_boues',lbl:'Niv. Cuve Boues',color:'#F39C12'},
+   {key:'niv_bac_filt',lbl:'Niv. Bac Filtrat',color:'#1ABC9C'}].forEach(n => {
+    const div = document.createElement('div');
+    div.className = 'niv-card';
+    div.innerHTML = `<div class="niv-label">${n.lbl}</div>
+      <div class="niv-val" id="niv-${n.key}" style="color:${n.color}">-- %</div>
+      <div class="niv-bar-bg"><div class="niv-bar-fill" id="bar-${n.key}" style="width:0%;background:${n.color}"></div></div>`;
+    niv.appendChild(div);
+  });
+  const tbody = document.getElementById('plc-detail-tbody');
+  tbody.innerHTML = '';
+  VARIATEURS.forEach(v => {
+    const tr = document.createElement('tr');
+    const sk = v.short.replace('.','_');
+    tr.innerHTML = `<td style="color:${v.color};font-weight:600">${v.nom}</td>
+      <td id="dt-hz-${sk}" style="color:#fff">--</td>
+      <td id="dt-a-${sk}" style="color:#f39c12">--</td>
+      <td id="dt-in-${sk}" style="color:#7a9bb0">--</td>
+      <td id="dt-ch-${sk}" style="color:#7a9bb0">--</td>
+      <td id="dt-cb-${sk}" style="color:#7a9bb0">--</td>
+      <td id="dt-an-${sk}" style="color:#2ecc71">--</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function applyReading(r) {
+  if (!r || !r.variateurs) return;
+  _plcHistory.push(r);
+  if (_plcHistory.length > MAX_CHART_PTS) _plcHistory.shift();
+
+  document.getElementById('plc-reads-label').textContent = r.read_count + ' lectures';
+  document.getElementById('ds-plc-reads').textContent = r.read_count;
+
+  Object.entries(r.variateurs).forEach(([s, v]) => {
+    const sk = s.replace('.','_');
+    const hzEl = document.getElementById('hz-' + sk);
+    const aEl = document.getElementById('a-' + sk);
+    const anEl = document.getElementById('analog-' + sk);
+    const ledEl = document.getElementById('led-' + sk);
+    if (hzEl) hzEl.textContent = v.hz.toFixed(1);
+    if (aEl) aEl.textContent = v.a.toFixed(2);
+    if (anEl) anEl.textContent = `${v.analog_nom}: ${v.analog.toFixed(1)}`;
+    if (ledEl) ledEl.className = 'var-led' + (v.running ? ' on' : '');
+    // detail table
+    const f = t => { const e = document.getElementById(t); if(e) e.textContent = Array.from(arguments).slice(1).join(''); };
+    const dt = (id, val) => { const e = document.getElementById(id); if(e) e.textContent = val; };
+    dt(`dt-hz-${sk}`, v.hz.toFixed(1) + ' Hz');
+    dt(`dt-a-${sk}`, v.a.toFixed(2) + ' A');
+    dt(`dt-in-${sk}`, v.i_nom.toFixed(2) + ' A');
+    dt(`dt-ch-${sk}`, v.consigne_h.toFixed(1));
+    dt(`dt-cb-${sk}`, v.consigne_b.toFixed(1));
+    dt(`dt-an-${sk}`, `${v.analog_nom}: ${v.analog.toFixed(1)}`);
+  });
+
+  if (r.niveaux) {
+    Object.entries(r.niveaux).forEach(([k, val]) => {
+      const el = document.getElementById('niv-' + k);
+      const bar = document.getElementById('bar-' + k);
+      if (el) el.textContent = val > 0.1 ? val.toFixed(1) + ' %' : '-- %';
+      if (bar) bar.style.width = Math.min(Math.max(val, 0), 100) + '%';
+    });
+  }
+  updatePlcChart();
+}
+
+function updatePlcChart() {
+  if (!_plcChart || _plcHistory.length < 1) return;
+  const labels = _plcHistory.map(r => r.ts.slice(11,19));
+  const key = _plcChartMode;
+  _plcChart.data.labels = labels;
+  VARIATEURS.forEach((v, i) => {
+    const vals = _plcHistory.map(r => (r.variateurs[v.short] || {})[key] || 0);
+    _plcChart.data.datasets[i].data = vals;
+  });
+  _plcChart.update('none');
+}
+
+function initPlcChart() {
+  const ctx = document.getElementById('plc-chart').getContext('2d');
+  _plcChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: VARIATEURS.map(v => ({
+        label: v.short, data: [], borderColor: v.color, backgroundColor: 'transparent',
+        borderWidth: 1.5, pointRadius: 0, tension: 0.2,
+      }))
+    },
+    options: {
+      animation: false, responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { labels: { color: '#a8c2d0', font: { size: 11 } } } },
+      scales: {
+        x: { ticks: { color: '#7a9bb0', maxTicksLimit: 8 }, grid: { color: '#243545' } },
+        y: { ticks: { color: '#7a9bb0' }, grid: { color: '#243545' } }
+      }
+    }
+  });
+}
+
+function plcShowChart(mode) {
+  _plcChartMode = mode;
+  if (_plcChart) {
+    _plcChart.options.scales.y.title = { display: true, text: mode === 'hz' ? 'Fréquence (Hz)' : 'Courant (A)', color: '#7a9bb0' };
+    updatePlcChart();
+  }
+}
+
+async function loadPlcStatus() {
+  try {
+    const r = await fetch('/api/plc/status');
+    const s = await r.json();
+    updatePlcUI(s);
+    if (!s.snap7_available) {
+      document.getElementById('plc-no-snap7').classList.remove('hidden');
+      document.getElementById('plc-main').classList.add('hidden');
+    }
+    return s;
+  } catch(e) {}
+}
+
+function updatePlcUI(s) {
+  const dot = document.getElementById('plc-dot');
+  const lbl = document.getElementById('plc-status-label');
+  const ip = document.getElementById('plc-ip-label');
+  const pillPlc = document.getElementById('pill-plc');
+  const dashStatus = document.getElementById('ds-plc-status');
+  const dashVars = document.getElementById('dash-plc-vars');
+  const dashPh = document.getElementById('dash-plc-placeholder');
+
+  const conn = s.connected;
+  dot.className = 'plc-dot' + (conn ? ' on' : '');
+  lbl.textContent = conn ? 'CONNECTÉ' : 'DÉCONNECTÉ';
+  ip.textContent = s.ip;
+  pillPlc.className = 'pill ' + (conn ? 'ok' : 'err');
+  pillPlc.textContent = 'PLC: ' + (conn ? 'Connecté' : 'Déconnecté');
+  dashStatus.textContent = conn ? 'Connecté' : 'Déco.';
+
+  document.getElementById('btn-plc-connect').classList.toggle('hidden', conn);
+  document.getElementById('btn-plc-disconnect').classList.toggle('hidden', !conn);
+  document.getElementById('btn-plc-start').classList.toggle('hidden', !conn || s.monitoring);
+  document.getElementById('btn-plc-stop').classList.toggle('hidden', !conn || !s.monitoring);
+  document.getElementById('btn-plc-read1').classList.toggle('hidden', !conn);
+
+  dashVars.style.display = conn ? 'grid' : 'none';
+  dashPh.style.display = conn ? 'none' : 'block';
+}
+
+async function plcConnect() {
+  const ip = _cfg.plc?.ip || '10.10.0.10';
+  const r = await fetch('/api/plc/connect', {method:'POST', body:JSON.stringify({ip}), headers:{'Content-Type':'application/json'}});
+  const d = await r.json();
+  if (d.ok) {
+    const s = await loadPlcStatus();
+    plcStartStream();
+  } else {
+    alert('Connexion échouée :\n' + d.message);
+  }
+}
+
+async function plcDisconnect() {
+  if (_plcES) { _plcES.close(); _plcES = null; }
+  await fetch('/api/plc/disconnect', {method:'POST'});
+  await loadPlcStatus();
+}
+
+async function plcStartMonitoring() {
+  const interval = _cfg.plc?.interval || 5;
+  await fetch('/api/plc/start', {method:'POST', body:JSON.stringify({interval}), headers:{'Content-Type':'application/json'}});
+  const s = await loadPlcStatus();
+}
+
+async function plcStopMonitoring() {
+  await fetch('/api/plc/stop', {method:'POST'});
+  await loadPlcStatus();
+}
+
+async function plcRead1() {
+  const r = await fetch('/api/plc/read', {method:'POST'});
+  const d = await r.json();
+  if (d.error) alert(d.error);
+  else applyReading(d);
+}
+
+function plcStartStream() {
+  if (_plcES) _plcES.close();
+  _plcES = new EventSource('/api/plc/stream');
+  _plcES.addEventListener('reading', e => {
+    const r = JSON.parse(e.data);
+    applyReading(r);
+    // mirror to dashboard var cards
+    updateDashPLC(r);
+  });
+  _plcES.onerror = () => { /* reconnect handled by browser */ };
+}
+
+function updateDashPLC(r) {
+  const grid = document.getElementById('dash-plc-vars');
+  if (!grid.innerHTML) {
+    VARIATEURS.forEach(v => {
+      const d = document.createElement('div');
+      d.className = 'var-card';
+      d.id = 'dash-var-' + v.short.replace('.','_');
+      d.style.cssText = `border-left-color:${v.color};padding:10px`;
+      d.innerHTML = `<div style="font-size:10px;color:#7a9bb0">${v.short}</div>
+        <div style="font-size:20px;font-weight:700;color:${v.color}" id="dash-hz-${v.short.replace('.','_')}">--</div>
+        <div style="font-size:12px;color:#f39c12" id="dash-a-${v.short.replace('.','_')}">--</div>`;
+      grid.appendChild(d);
+    });
+  }
+  if (!r.variateurs) return;
+  Object.entries(r.variateurs).forEach(([s, v]) => {
+    const sk = s.replace('.','_');
+    const hz = document.getElementById('dash-hz-' + sk);
+    const a = document.getElementById('dash-a-' + sk);
+    if (hz) hz.textContent = v.hz.toFixed(1) + ' Hz';
+    if (a) a.textContent = v.a.toFixed(2) + ' A';
+  });
+}
+
+// =====================================================================
+// CYCLEVIA
+// =====================================================================
+let _cvJobId = null;
+function initCvMois() {
+  const now = new Date();
+  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  document.getElementById('cv-mois').value = prev.getMonth() + 1;
+  document.getElementById('cv-annee').value = prev.getFullYear();
+}
+
+async function cvRun() {
+  const mois = parseInt(getV('cv-mois'));
+  const annee = parseInt(getV('cv-annee'));
+  cclear('cv-console');
+  document.getElementById('cv-progress').style.width = '5%';
+  document.getElementById('cv-result').classList.add('hidden');
+  document.getElementById('btn-cv-run').disabled = true;
+
+  clog('cv-console', `Collecte huiles ${mois.toString().padStart(2,'0')}/${annee}...`, 'log-info');
+
+  const r = await fetch('/api/cyclevia/run', {
+    method: 'POST',
+    body: JSON.stringify({mois, annee}),
+    headers: {'Content-Type':'application/json'}
+  });
+  const {job_id} = await r.json();
+  _cvJobId = job_id;
+
+  const es = new EventSource(`/api/cyclevia/progress/${job_id}`);
+  es.addEventListener('log', e => clog('cv-console', JSON.parse(e.data), 'log-info'));
+  es.addEventListener('done', e => {
+    const d = JSON.parse(e.data);
+    es.close();
+    document.getElementById('btn-cv-run').disabled = false;
+    document.getElementById('cv-progress').style.width = '100%';
+    const res = document.getElementById('cv-result');
+    if (d.has_data) {
+      clog('cv-console', `✔ ${d.nb_lignes} lignes — ${d.total_tonnes.toFixed(3)} t`, 'log-ok');
+      document.getElementById('cv-result-text').innerHTML =
+        `<b>${d.nb_lignes} lignes</b> — Total : <b>${d.total_tonnes.toFixed(3)} t</b><br>
+         <small style="color:#6c757d">${d.filename}</small>`;
+      res.classList.remove('hidden');
+      res.classList.add('ready');
+    } else {
+      clog('cv-console', '⚠ Aucun BSD pour ce mois', 'log-warn');
+      res.classList.remove('hidden', 'ready');
+    }
+  });
+  es.addEventListener('error', e => {
+    const msg = e.data ? JSON.parse(e.data) : 'Erreur';
+    es.close();
+    document.getElementById('btn-cv-run').disabled = false;
+    clog('cv-console', '✗ ' + msg, 'log-err');
+  });
+}
+
+function cvDownload() {
+  if (_cvJobId) window.location.href = `/api/cyclevia/download/${_cvJobId}`;
+}
+
+// =====================================================================
+// PILLS UPDATE
+// =====================================================================
+function updatePillsFromStatus() {}
+
+// =====================================================================
+// INIT
+// =====================================================================
+(async () => {
+  initPLCWidgets();
+  initPlcChart();
+  initCvMois();
+  await loadAllConfig();
+  loadBilanConfig();
+  const st = await loadPlcStatus();
+  if (st && st.connected) {
+    plcStartStream();
+    if (st.monitoring) {
+      // already monitoring, just stream
+    }
+  }
+  // Refresh PLC status every 15s
+  setInterval(async () => {
+    const s = await loadPlcStatus();
+    if (s) document.getElementById('ds-plc-reads').textContent = s.read_count;
+  }, 15000);
+})();
+</script>
+</body>
+</html>

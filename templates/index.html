@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bilan kilométrique déchets — PROTEC</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --primary: #1f4e5f;
+      --primary-light: #2d6e85;
+      --primary-dark: #153848;
+      --accent: #e8a020;
+      --danger: #c0392b;
+      --success: #27ae60;
+      --text: #2c3e50;
+      --text-muted: #7f8c8d;
+      --border: #dce1e7;
+      --console-bg: #1a2636;
+      --radius: 8px;
+      --shadow: 0 2px 8px rgba(0,0,0,.1);
+    }
+
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    header {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%);
+      color: #fff;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.25);
+    }
+    header .logo {
+      width: 44px; height: 44px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 900; color: #fff;
+      flex-shrink: 0;
+    }
+    header h1 { font-size: 1.3rem; font-weight: 700; line-height: 1.2; }
+    header p  { font-size: .82rem; opacity: .8; margin-top: 2px; }
+
+    main { max-width: 1100px; margin: 28px auto; padding: 0 20px 60px; }
+
+    .tabs { display: flex; gap: 4px; margin-bottom: -1px; }
+    .tab-btn {
+      padding: 10px 22px; border: 1px solid var(--border); border-bottom: none;
+      background: #e8ecef; color: var(--text-muted); cursor: pointer;
+      border-radius: var(--radius) var(--radius) 0 0;
+      font-size: .9rem; font-weight: 600; transition: background .15s, color .15s;
+    }
+    .tab-btn.active { background: var(--card); color: var(--primary); }
+    .tab-btn:hover:not(.active) { background: #d8dde3; }
+
+    .tab-panel {
+      display: none; background: var(--card); border: 1px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) var(--radius);
+      padding: 28px 28px 32px;
+      box-shadow: var(--shadow);
+    }
+    .tab-panel.active { display: block; }
+
+    .form-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+    label { font-size: .88rem; font-weight: 600; color: var(--text); white-space: nowrap; min-width: 260px; }
+    input[type=text], input[type=password], textarea, select {
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 8px 12px; font-size: .9rem; color: var(--text);
+      background: #fff; transition: border-color .15s, box-shadow .15s;
+      width: 100%; max-width: 480px;
+    }
+    input[type=text]:focus, input[type=password]:focus, textarea:focus {
+      outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(31,78,95,.15);
+    }
+    textarea { min-height: 260px; resize: vertical; font-family: 'Consolas', monospace; font-size: .85rem; }
+
+    .checkbox-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .checkbox-row input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; }
+    .checkbox-row label { min-width: unset; font-weight: 500; }
+
+    .btn {
+      padding: 9px 22px; border: none; border-radius: 6px;
+      font-size: .9rem; font-weight: 600; cursor: pointer; transition: background .15s, transform .1s;
+      display: inline-flex; align-items: center; gap: 7px;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-light); }
+    .btn-primary:disabled { background: #a0b8c4; cursor: not-allowed; }
+    .btn-accent  { background: var(--accent); color: #fff; }
+    .btn-accent:hover  { background: #d4901a; }
+    .btn-accent:disabled  { background: #d4c09a; cursor: not-allowed; }
+    .btn-outline { background: #fff; color: var(--primary); border: 2px solid var(--primary); }
+    .btn-outline:hover { background: var(--primary); color: #fff; }
+
+    .run-controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
+    .year-input { width: 180px !important; max-width: 180px !important; }
+
+    .progress-wrap { margin-bottom: 16px; }
+    .progress-label { font-size: .8rem; color: var(--text-muted); margin-bottom: 4px; }
+    .progress-bar-outer {
+      height: 8px; background: #e0e6ea; border-radius: 4px; overflow: hidden;
+    }
+    .progress-bar-inner {
+      height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--primary-light));
+      border-radius: 4px; transition: width .3s ease;
+    }
+
+    .console {
+      background: var(--console-bg); color: #c8d8e8;
+      font-family: 'Consolas', 'Courier New', monospace; font-size: .82rem;
+      border-radius: var(--radius); padding: 14px 16px;
+      height: 260px; overflow-y: auto; white-space: pre-wrap; word-break: break-word;
+      border: 1px solid #0d1c29;
+      margin-bottom: 20px;
+    }
+    .console .log-error { color: #e87070; }
+    .console .log-done  { color: #7ee8a2; font-weight: 700; }
+
+    #results-section { display: none; }
+    .section-title {
+      font-size: 1rem; font-weight: 700; color: var(--primary);
+      margin-bottom: 14px; padding-bottom: 6px; border-bottom: 2px solid var(--border);
+    }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .stat-card {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: #fff; border-radius: var(--radius); padding: 16px 18px;
+    }
+    .stat-card .stat-value { font-size: 1.7rem; font-weight: 800; }
+    .stat-card .stat-label { font-size: .78rem; opacity: .85; margin-top: 2px; }
+
+    .table-wrap { overflow-x: auto; margin-bottom: 24px; border: 1px solid var(--border); border-radius: var(--radius); }
+    table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+    thead tr { background: var(--primary); color: #fff; }
+    thead th { padding: 10px 14px; text-align: left; font-weight: 600; white-space: nowrap; }
+    tbody tr:nth-child(even) { background: #f7f9fb; }
+    tbody tr:hover { background: #eaf3f7; }
+    tbody td { padding: 8px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: .75rem; font-weight: 700;
+    }
+    .badge-collecte { background: #d6eaf8; color: #1a6fa0; }
+    .badge-reath    { background: #fdebd0; color: #a0550a; }
+
+    .pagination { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+    .page-info { font-size: .85rem; color: var(--text-muted); }
+
+    .info-box {
+      background: #edf7ff; border-left: 4px solid var(--primary-light);
+      border-radius: 0 6px 6px 0; padding: 12px 16px;
+      font-size: .83rem; color: var(--text); margin-top: 18px; line-height: 1.6;
+    }
+    .info-box strong { color: var(--primary); }
+
+    .save-ok { color: var(--success); font-size: .88rem; font-weight: 600; margin-left: 12px; display: none; }
+
+    @media (max-width: 640px) {
+      header h1 { font-size: 1.1rem; }
+      .tab-btn { padding: 8px 14px; font-size: .82rem; }
+      .tab-panel { padding: 18px 14px; }
+      label { min-width: unset; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">P</div>
+  <div>
+    <h1>Bilan kilométrique des déchets</h1>
+    <p>PROTEC — Trackdéchets BSD &rarr; distances routières</p>
+  </div>
+</header>
+
+<main>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('calcul')">&#9654; Calcul</button>
+    <button class="tab-btn" onclick="switchTab('config')">&#9881; Configuration</button>
+    <button class="tab-btn" onclick="switchTab('categories')">&#9635; Catégories CED</button>
+  </div>
+
+  <div id="tab-calcul" class="tab-panel active">
+    <div class="run-controls">
+      <label for="years" style="min-width:auto">Année(s) :</label>
+      <input type="text" id="years" class="year-input" placeholder="ex : 2025 ou 2023-2025" value="">
+      <button class="btn btn-primary" id="btn-run" onclick="startCalc()">&#9654; Lancer le calcul</button>
+      <button class="btn btn-accent" id="btn-export" disabled onclick="exportExcel()">&#8681; Exporter Excel</button>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label" id="progress-label">Prêt.</div>
+      <div class="progress-bar-outer">
+        <div class="progress-bar-inner" id="progress-bar"></div>
+      </div>
+    </div>
+
+    <div class="console" id="console">Renseignez la Configuration (jeton API, SIRET PROTEC) puis lancez le calcul.</div>
+
+    <div id="results-section">
+      <div class="section-title">Résultats</div>
+      <div class="summary-grid" id="stat-cards"></div>
+
+      <div class="section-title" style="margin-top:8px">Synthèse par année / type / catégorie</div>
+      <div class="table-wrap">
+        <table id="summary-table">
+          <thead><tr>
+            <th>Année</th><th>Type</th><th>Catégorie</th><th>Code traitement</th><th>Km total</th>
+          </tr></thead>
+          <tbody id="summary-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="section-title">Détail des trajets</div>
+      <div class="table-wrap">
+        <table id="detail-table">
+          <thead><tr>
+            <th>BSD</th><th>Année</th><th>Type</th><th>Catégorie</th><th>CED</th>
+            <th>Origine</th><th>Destination</th><th>Code trait.</th>
+            <th>Km (1 sens)</th><th>Km comptés</th><th>Source</th>
+          </tr></thead>
+          <tbody id="detail-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <button class="btn btn-outline" id="btn-prev" onclick="loadDetail(currentPage-1)">&#8592; Préc.</button>
+        <span class="page-info" id="page-info"></span>
+        <button class="btn btn-outline" id="btn-next" onclick="loadDetail(currentPage+1)">Suiv. &#8594;</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-config" class="tab-panel">
+    <div class="form-row">
+      <label for="td-token">Jeton API Trackdéchets (Bearer) :</label>
+      <input type="password" id="td-token" placeholder="eyJ…">
+    </div>
+    <div class="form-row">
+      <label for="ors-key">Clé API OpenRouteService <em style="font-weight:400">(recommandée)</em> :</label>
+      <input type="password" id="ors-key" placeholder="5b3c…">
+    </div>
+    <div class="form-row">
+      <label for="siret">SIRET PROTEC :</label>
+      <input type="text" id="siret" placeholder="12345678901234">
+    </div>
+    <div class="form-row">
+      <label for="adresse">Adresse PROTEC (dépôt) :</label>
+      <input type="text" id="adresse" placeholder="12 rue de l'Industrie, 86100 Châtellerault">
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="round-trip" checked>
+      <label for="round-trip">Compter en aller-retour (×2)</label>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+      <button class="btn btn-primary" onclick="saveConfig()">&#10003; Enregistrer</button>
+      <span class="save-ok" id="cfg-ok">&#10003; Enregistré !</span>
+    </div>
+    <div class="info-box">
+      <strong>Jeton API Trackdéchets :</strong> Mon compte → Développeurs → Générer un jeton d'accès.<br>
+      <strong>Clé OpenRouteService</strong> (gratuite) : openrouteservice.org/dev → Sign up.<br>
+      Sans clé ORS, repli automatique sur OSRM puis estimation vol d'oiseau ×1,3.
+    </div>
+  </div>
+
+  <div id="tab-categories" class="tab-panel">
+    <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:14px">
+      Format : <code>Nom catégorie = préfixe1, préfixe2, …</code><br>
+      Les codes sont normalisés (espaces et * ignorés). Le préfixe le plus long l'emporte.
+    </p>
+    <textarea id="cat-text" spellcheck="false"></textarea>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+      <button class="btn btn-primary" onclick="saveCategories()">&#10003; Enregistrer les catégories</button>
+      <span class="save-ok" id="cat-ok">&#10003; Enregistré !</span>
+    </div>
+    <div class="info-box" style="margin-top:16px">
+      Exemples de préfixes :<br>
+      <code>Huiles = 1302</code> → capte tous les codes <em>13 02 0x*</em><br>
+      <code>Emballages vides souillés plastique = 150110</code><br>
+      Les déchets non reconnus tombent dans <em>Autres / non classé</em>.
+    </div>
+  </div>
+</main>
+
+<script>
+  function switchTab(name) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    const idx = ['calcul','config','categories'].indexOf(name);
+    document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+  }
+
+  const consoleEl = document.getElementById('console');
+  function logLine(msg, cls) {
+    const span = document.createElement('span');
+    if (cls) span.className = cls;
+    span.textContent = msg + '\n';
+    consoleEl.appendChild(span);
+    consoleEl.scrollTop = consoleEl.scrollHeight;
+  }
+  function clearConsole() { consoleEl.textContent = ''; }
+
+  const barEl   = document.getElementById('progress-bar');
+  const labelEl = document.getElementById('progress-label');
+  function setProgress(done, total) {
+    const pct = total > 0 ? Math.round(done / total * 100) : 0;
+    barEl.style.width = pct + '%';
+    labelEl.textContent = total > 0
+      ? `Trajets calculés : ${done} / ${total} (${pct} %)`
+      : 'Calcul en cours…';
+  }
+  function resetProgress() {
+    barEl.style.width = '0%';
+    labelEl.textContent = 'Prêt.';
+  }
+
+  let currentJobId = null;
+  let currentPage  = 1;
+
+  async function loadConfig() {
+    const r = await fetch('/api/config');
+    const cfg = await r.json();
+    document.getElementById('td-token').value    = cfg.td_api_token   || '';
+    document.getElementById('ors-key').value     = cfg.ors_api_key    || '';
+    document.getElementById('siret').value       = cfg.protec_siret   || '';
+    document.getElementById('adresse').value     = cfg.protec_adresse || '';
+    document.getElementById('round-trip').checked = !!cfg.round_trip;
+    const cats = cfg.categories || {};
+    document.getElementById('cat-text').value = Object.entries(cats)
+      .map(([k, v]) => `${k} = ${v.join(', ')}`).join('\n');
+    if (!document.getElementById('years').value) {
+      document.getElementById('years').value = new Date().getFullYear().toString();
+    }
+  }
+
+  async function saveConfig() {
+    const cfg = await (await fetch('/api/config')).json();
+    cfg.td_api_token   = document.getElementById('td-token').value.trim();
+    cfg.ors_api_key    = document.getElementById('ors-key').value.trim();
+    cfg.protec_siret   = document.getElementById('siret').value.trim();
+    cfg.protec_adresse = document.getElementById('adresse').value.trim();
+    cfg.round_trip     = document.getElementById('round-trip').checked;
+    await fetch('/api/config', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(cfg) });
+    flashOk('cfg-ok');
+  }
+
+  async function saveCategories() {
+    const cfg = await (await fetch('/api/config')).json();
+    const cats = {};
+    document.getElementById('cat-text').value.split('\n').forEach(line => {
+      if (line.includes('=')) {
+        const [name, prefs] = line.split('=', 2);
+        const n = name.trim();
+        const ps = prefs.split(',').map(p => p.trim()).filter(Boolean);
+        if (n && ps.length) cats[n] = ps;
+      }
+    });
+    cfg.categories = cats;
+    await fetch('/api/config', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(cfg) });
+    flashOk('cat-ok');
+  }
+
+  function flashOk(id) {
+    const el = document.getElementById(id);
+    el.style.display = 'inline';
+    setTimeout(() => { el.style.display = 'none'; }, 3000);
+  }
+
+  async function startCalc() {
+    const years = document.getElementById('years').value.trim();
+    if (!years) { alert('Saisissez une ou plusieurs années.'); return; }
+
+    clearConsole();
+    resetProgress();
+    document.getElementById('results-section').style.display = 'none';
+    document.getElementById('btn-run').disabled    = true;
+    document.getElementById('btn-export').disabled = true;
+    currentJobId = null;
+
+    const r = await fetch('/api/run', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ years })
+    });
+    const data = await r.json();
+    if (!r.ok || data.error) {
+      logLine('[ERREUR] ' + (data.error || r.statusText), 'log-error');
+      document.getElementById('btn-run').disabled = false;
+      return;
+    }
+    currentJobId = data.job_id;
+    listenProgress(currentJobId);
+  }
+
+  function listenProgress(jobId) {
+    const es = new EventSource('/api/progress/' + jobId);
+    es.onmessage = e => {
+      const ev = JSON.parse(e.data);
+      if (ev.type === 'ping') return;
+      if (ev.type === 'log') {
+        logLine(ev.msg);
+      } else if (ev.type === 'progress') {
+        setProgress(ev.done, ev.total);
+      } else if (ev.type === 'summary') {
+        renderSummary(ev.data, ev.count_rows);
+      } else if (ev.type === 'done') {
+        es.close();
+        labelEl.textContent = 'Calcul terminé.';
+        document.getElementById('btn-run').disabled    = false;
+        document.getElementById('btn-export').disabled = false;
+        loadDetail(1);
+      } else if (ev.type === 'error') {
+        logLine('[ERREUR] ' + ev.msg, 'log-error');
+        es.close();
+        document.getElementById('btn-run').disabled = false;
+      }
+    };
+    es.onerror = () => {
+      logLine('[ERREUR] Connexion SSE perdue.', 'log-error');
+      es.close();
+      document.getElementById('btn-run').disabled = false;
+    };
+  }
+
+  function renderSummary(rawData, countRows) {
+    const rows = Object.entries(rawData).map(([k, km]) => {
+      const [yr, typ, cat, code] = k.split('|');
+      return { yr: parseInt(yr) || yr, typ, cat, code, km };
+    }).sort((a,b) => (a.yr - b.yr) || a.typ.localeCompare(b.typ));
+
+    const totalKm    = rows.reduce((s,r) => s + r.km, 0);
+    const collecteKm = rows.filter(r=>r.typ==='Collecte').reduce((s,r)=>s+r.km,0);
+    const reachemKm  = rows.filter(r=>r.typ==='Reacheminement').reduce((s,r)=>s+r.km,0);
+
+    document.getElementById('stat-cards').innerHTML = [
+      { val: fmt(totalKm) + ' km', lbl: 'Kilomètres totaux' },
+      { val: fmt(collecteKm) + ' km', lbl: 'Collecte (producteur → PROTEC)' },
+      { val: fmt(reachemKm) + ' km', lbl: 'Réacheminement (PROTEC → exutoire)' },
+      { val: countRows, lbl: 'Trajets analysés' },
+    ].map(s => `<div class="stat-card"><div class="stat-value">${s.val}</div><div class="stat-label">${s.lbl}</div></div>`).join('');
+
+    document.getElementById('summary-tbody').innerHTML = rows.map(r => `<tr>
+      <td>${r.yr}</td>
+      <td><span class="badge ${r.typ==='Collecte'?'badge-collecte':'badge-reath'}">${r.typ}</span></td>
+      <td>${esc(r.cat)}</td>
+      <td>${esc(r.code) || '-'}</td>
+      <td><strong>${fmt(r.km)}</strong></td>
+    </tr>`).join('');
+
+    document.getElementById('results-section').style.display = 'block';
+  }
+
+  async function loadDetail(page) {
+    if (!currentJobId) return;
+    const r = await fetch(`/api/results/${currentJobId}?page=${page}&per_page=50`);
+    if (!r.ok) return;
+    const data = await r.json();
+    currentPage = data.page;
+
+    document.getElementById('detail-tbody').innerHTML = data.rows.map(row => `<tr>
+      <td>${esc(row['BSD'])}</td>
+      <td>${row['Annee'] || ''}</td>
+      <td><span class="badge ${row['Type']==='Collecte'?'badge-collecte':'badge-reath'}">${esc(row['Type'])}</span></td>
+      <td>${esc(row['Categorie'])}</td>
+      <td>${esc(row['CED'])}</td>
+      <td title="${esc(row['Adresse origine'])}">${esc(row['Origine'])}</td>
+      <td title="${esc(row['Adresse destination'])}">${esc(row['Destination'])}</td>
+      <td>${esc(row['Code traitement']) || '-'}</td>
+      <td>${row['Km (1 sens)'] != null ? fmt(row['Km (1 sens)']) : '—'}</td>
+      <td>${row['Km comptes'] != null ? fmt(row['Km comptes']) : '—'}</td>
+      <td>${esc(row['Source'])}</td>
+    </tr>`).join('');
+
+    document.getElementById('page-info').textContent =
+      `Page ${data.page} / ${data.pages}  (${data.total} trajets)`;
+    document.getElementById('btn-prev').disabled = (data.page <= 1);
+    document.getElementById('btn-next').disabled = (data.page >= data.pages);
+  }
+
+  function exportExcel() {
+    if (!currentJobId) return;
+    window.location.href = '/api/export/' + currentJobId;
+  }
+
+  function fmt(n) {
+    return Number(n).toLocaleString('fr-FR', { maximumFractionDigits: 1 });
+  }
+  function esc(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  loadConfig();
+</script>
+</body>
+</html>
